@@ -24,7 +24,7 @@ Simulate your complete hypothetical series of motions. How many positions does t
 
 import numpy as np
 
-data_path = "Z:/python_stuff/advent_of_code_2022/Day_09/data/"
+data_path = "C:/python_projects/advent_of_code_2022/Day_09/data/"
 file_name = "input.XSCORE"
 
 with open(data_path+file_name, "r") as input_file:
@@ -131,18 +131,13 @@ def update_knot_position(current_knot,previous_knot,movement_direction):
                 
         else:
             list_current_knot = list(current_knot)
-            if movement_direction == "U":
-                list_current_knot[1] = list_current_knot[1] + 1
-                updated_knot = tuple(list_current_knot)
-            elif movement_direction == "D":
-                list_current_knot[1] = list_current_knot[1] - 1
-                updated_knot = tuple(list_current_knot)
-            elif movement_direction == "R":
-                list_current_knot[0] = list_current_knot[0] + 1
-                updated_knot = tuple(list_current_knot)
-            elif movement_direction == "L":
-                list_current_knot[0] = list_current_knot[0] - 1
-                updated_knot = tuple(list_current_knot)
+            list_previous_knot = list(previous_knot)
+
+            list_current_knot[0] += (list_current_knot[0] != list_previous_knot[0]) * np.sign(list_previous_knot[0] - list_current_knot[0])
+            list_current_knot[1] += (list_current_knot[1] != list_previous_knot[1]) * np.sign(list_previous_knot[1] - list_current_knot[1])
+
+            updated_knot = tuple(list_current_knot)
+
     else:
         updated_knot = current_knot
         
@@ -205,43 +200,4 @@ for head_movement in head_movements:
                                             
         tail_positions.append(tail_position)
 
-
-
-
-
-
 print(f"The number of positions the tail of the ten-knot rope visits at least once: {len(set(tail_positions))}\n")
-
-
-from dataclasses import dataclass
-import numpy as np
-
-@dataclass
-class Knot:
-    x: int
-    y: int
-    def __sub__(self, knot):
-        return Knot(self.x - knot.x, self.y - knot.y)
-    def norm(self):
-        return np.linalg.norm([self.x, self.y])
-
-motions = [direction_steps.split(' ') for direction_steps in text_input_file.splitlines()]
-n_knots = 10
-rope = [Knot(0, 0) for _ in range(n_knots)]
-tail_positions = {(rope[n_knots-1].x, rope[n_knots-1].y)}
-
-for direction, steps in motions:
-    for _ in range(1, int(steps)+1):
-        match direction:
-            case 'R': rope[0].x += 1
-            case 'L': rope[0].x -= 1
-            case 'U': rope[0].y += 1
-            case 'D': rope[0].y -= 1
-        for k in range(n_knots-1):
-            if (rope[k]- rope[k+1]).norm() >= 2:
-                rope[k+1].x += (rope[k+1].x != rope[k].x) * np.sign(rope[k].x - rope[k+1].x)
-                rope[k+1].y += (rope[k+1].y != rope[k].y) * np.sign(rope[k].y - rope[k+1].y)
-                if k+1 == n_knots-1:
-                    tail_positions.add((rope[n_knots-1].x, rope[n_knots-1].y))
-
-print(len(tail_positions))
