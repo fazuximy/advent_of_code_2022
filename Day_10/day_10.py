@@ -12,8 +12,6 @@ The CPU uses these instructions in a program (your puzzle input) to, somehow, te
 Find the signal strength during the 20th, 60th, 100th, 140th, 180th, and 220th cycles. What is the sum of these six signal strengths?
 """
 
-import numpy as np
-
 data_path = "C:/python_projects/advent_of_code_2022/Day_10/data/"
 file_name = "input.txt"
 
