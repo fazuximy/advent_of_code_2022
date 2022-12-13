@@ -37,6 +37,8 @@ Determine which pairs of packets are already in the right order. What is the sum
 from dataclasses import dataclass
 import json
 from itertools import zip_longest
+from functools import cmp_to_key
+import math
 
 @dataclass
 class PacketPairs:
@@ -78,44 +80,74 @@ for numb,test_packet_pair in enumerate(test_packet_pairs):
     packet_pair_test_list.append(PacketPairs(numb+1,packets[0],packets[1]))
 
 
-
 def packet_generator(packet1, packet2):
-    found_out = False
     for subpacket1, subpacket2 in zip_longest(packet1,packet2):
-        if found_out != True:
-            print(subpacket1, subpacket2)
+            #print(subpacket1, subpacket2)
             if subpacket1 == None:
-                found_out = True
                 yield True
-                break
             elif subpacket2 == None:
-                found_out = True
                 yield False
-                break
             elif isinstance(subpacket1,int) and isinstance(subpacket2,int):
                 if subpacket1 < subpacket2:
-                    found_out = True
                     yield True
-                    break
                 elif subpacket1 > subpacket2:
-                    ound_out = True
                     yield False
-                    break
                 elif subpacket1 == subpacket2:
-                    yield True
+                    continue
             elif isinstance(subpacket1,list) and isinstance(subpacket2,int):
                 yield from  packet_generator(subpacket1,[subpacket2])
             elif isinstance(subpacket1,int) and isinstance(subpacket2,list):
                 yield from  packet_generator([subpacket1],subpacket2)
             else: 
                 yield from packet_generator(subpacket1,subpacket2)
+    #print("")
             
-        
-print([all(list(packet_generator(packet_pair.packet1,packet_pair.packet2))) for packet_pair in packet_pair_test_list])
+# To test on test data       
+#print([all(list(packet_generator(packet_pair.packet1,packet_pair.packet2))) for packet_pair in packet_pair_test_list])
 
-in_right_order = [packet_pair.index for packet_pair in packet_pair_test_list if all(list(packet_generator(packet_pair.packet1,packet_pair.packet2))) == True]
+in_right_order = [packet_pair.index for packet_pair in packet_pair_class_list if list(packet_generator(packet_pair.packet1,packet_pair.packet2))[0] == True]
 
-#in_right_order = [packet_pair.index for packet_pair in packet_pair_class_list if all(list(packet_generator(packet_pair.packet1,packet_pair.packet2))) == True]
+result_task_1 = sum(in_right_order)
+print(f"The sum of the indeces of those pairs is: {result_task_1}")
 
-result = sum(in_right_order)
-print(f"The sum of the indeces of those pairs is: {result}")
+
+# Task 2
+print("Task 2")
+
+"""
+The distress signal protocol also requires that you include two additional divider packets:
+
+[[2]]
+[[6]]
+
+Using the same rules as before, organize all packets - the ones in your list of received packets as well as 
+the two divider packets - into the correct order.
+
+Afterward, locate the divider packets. To find the decoder key for this distress signal, you need to determine the indices of the two 
+divider packets and multiply them together. (The first packet is at index 1, the second packet is at index 2, and so on.) 
+
+Organize all of the packets into the correct order. What is the decoder key for the distress signal?
+"""
+
+
+def sorting_packets(packet1, packet2):
+    
+    answer = int(list(packet_generator(packet1, packet2))[0])
+    
+    if answer == 1:
+        return -1
+    else:
+        return 1
+
+packet_list = []
+
+for numb,packet_pair in enumerate(list_of_packet_pairs):
+    packets = packet_pair.splitlines()
+    [packet_list.append(json.loads(i)) for i in packets]
+packet_list_with_decoders = packet_list + [[[2]],[[6]]]
+
+sorted_packets = sorted(packet_list_with_decoders,key=cmp_to_key(sorting_packets))
+
+result_task_2 = math.prod([j+1 for j,i in enumerate(sorted_packets) if i in [[[2]],[[6]]]])
+
+print(f"The product of the indexes for the decoder keys is: {result_task_2}")
